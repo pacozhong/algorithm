@@ -9,8 +9,9 @@
 #include "tree_bs.h"
 #include "stack.h"
 
-tree_bs_t *tree_bs_init(compare_fun_t* compare_fun){
+tree_bs_t *tree_bs_init(tree_bs_compare_fun_t* compare_fun){
 	tree_bs_t * tr = (tree_bs_t *) calloc(sizeof(tree_bs_t), 1);
+	if(tr == NULL) return NULL;
 	tr->root = NULL;
 
 	tr->compare_fun = compare_fun;
@@ -37,7 +38,8 @@ static int _tree_bs_find(tree_bs_t *tree, tree_bs_node_t *node, const void* data
 	if(node == NULL) {
 		if(ret_p_node != NULL)
 			*ret_p_node = p;
-		*ret_node = p;
+		if(ret_node != NULL)
+			*ret_node = p;
 		return -1;
 	}
 	
@@ -46,7 +48,8 @@ static int _tree_bs_find(tree_bs_t *tree, tree_bs_node_t *node, const void* data
 	if(ret == 0) {
 		if(ret_p_node != NULL)
 			*ret_p_node = p;
-		*ret_node = node;
+		if(ret_node != NULL)
+			*ret_node = node;
 		return 0;
 	}else if(ret < 0){
 		return _tree_bs_find(tree, node->r, data, node, ret_p_node, ret_node);
@@ -56,7 +59,7 @@ static int _tree_bs_find(tree_bs_t *tree, tree_bs_node_t *node, const void* data
 }
 
 int tree_bs_find(tree_bs_t *tree, const void* data, tree_bs_node_t **ret_node){
-	if(tree->root == NULL) return -1;
+	if(tree == NULL) return -1;
     return _tree_bs_find(tree, tree->root, data, NULL, NULL, ret_node);	
 }
 
@@ -102,8 +105,10 @@ int tree_bs_delete(tree_bs_t *tree, const void *data){
 		return -2;	
 	}
 	//printf("ret_node_p:0x%016lx\tret_node:0x%016lx\n", (int64_t)ret_node_p, (int64_t)ret_node);
-	ret_node->cnt --;
-	if(ret_node->cnt > 0) return 0;
+	if(ret_node->cnt > 1) {
+		ret_node->cnt --;
+		return 0;
+	}
 	tree->num_node --;
 	//both children is NULL
 	if(ret_node->l == NULL && ret_node->r == NULL) {
@@ -126,8 +131,9 @@ int tree_bs_delete(tree_bs_t *tree, const void *data){
 			tmp_p = tmp;
 			tmp = tmp->r;
 		}
+		free(ret_node->data);	
 		ret_node->data = tmp->data;	
-		ret_node->cnt ++;
+		ret_node->cnt = tmp->cnt;
 		if(tmp_p == ret_node){
 			ret_node->l = tmp->l; 
 		}else{
@@ -153,14 +159,76 @@ int tree_bs_delete(tree_bs_t *tree, const void *data){
 	return 0;
 }
 
-void _tree_bs_inorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
+/* left rotation */
+//p: pivot's parent
+static int _tree_bs_left_rotate(tree_bs_node_t *pivot, tree_bs_node_t *p, tree_bs_node_t **new_root){
+	if(pivot == NULL || pivot->r == NULL) return -1;
+	tree_bs_node_t *tmp = pivot->r;
+	pivot->r = tmp->l;
+	tmp->l = pivot;
+	if(p != NULL){
+		if(p->l == pivot) p->l = tmp;
+		else p->r = tmp;
+	}
+	if(new_root != NULL) *new_root = tmp;
+	return 0;	
+}  
+
+int tree_bs_left_rotate(tree_bs_t *tree, const void *data){
+	if(tree == NULL || tree->root == NULL || data == NULL) return -1;
+	tree_bs_node_t *ret_node, *ret_p_node, *new_root;
+	int find_ret = _tree_bs_find(tree, tree->root, data, NULL, &ret_p_node, &ret_node);
+	if(find_ret != 0) return -2;//not find
+	//rotate
+	int rotate_ret = _tree_bs_left_rotate(ret_node, ret_p_node, &new_root);
+	if(rotate_ret != 0) return -3;//rotate fail
+	//pivot is root
+	if(ret_p_node == NULL && ret_node == tree->root) {
+		tree->root = new_root;
+	}
+	return 0;
+}
+
+/* right rotate */
+//p:pivot's parent
+static int _tree_bs_right_rotate(tree_bs_node_t *pivot, tree_bs_node_t *p, tree_bs_node_t **new_root){
+	if(pivot == NULL || pivot->l == NULL ) return -1;
+	tree_bs_node_t *tmp = pivot->l;
+	pivot->l = tmp->r;
+	tmp->r = pivot;
+	if(p != NULL){
+		if(p->l == pivot) p->l = tmp;
+		else p->r = tmp;
+	}
+	if(new_root != NULL) *new_root = tmp;
+	return 0;
+}
+
+int tree_bs_right_rotate(tree_bs_t *tree, const void *data){
+	if(tree == NULL || tree->root == NULL || data == NULL) return -1;
+	tree_bs_node_t *ret_node, *ret_p_node, *new_root;
+	int find_ret = _tree_bs_find(tree, tree->root, data, NULL, &ret_p_node, &ret_node);
+	if(find_ret != 0) return -2;
+	
+	//rotate
+	int rotate_ret = _tree_bs_right_rotate(ret_node, ret_p_node, &new_root);
+	if(rotate_ret != 0) return -3;
+
+	//pivot is root
+	if(ret_p_node == NULL && ret_node == tree->root){
+		tree->root = new_root;
+	}
+	return 0;
+}
+/*  
+static void _tree_bs_inorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
 	if(node == NULL) return ;
 	_tree_bs_inorder_traverse(node->l, visit);
 	visit(node);
 	_tree_bs_inorder_traverse(node->r, visit);
 }
-
-void tree_bs_inorder_traverse(tree_bs_t *tree, visit_fun_t *visit){
+*/
+void tree_bs_inorder_traverse(tree_bs_t *tree, tree_bs_visit_fun_t *visit){
 //	_tree_bs_inorder_traverse(tree->root, visit);
 	//no recusive implent
 	if(tree->root == NULL) return;
@@ -183,15 +251,15 @@ void tree_bs_inorder_traverse(tree_bs_t *tree, visit_fun_t *visit){
 	}
 	stack_free(st);
 }
-
-void _tree_bs_preorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
+/*
+static void _tree_bs_preorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
 	if(node == NULL) return ;
 	visit(node);
 	_tree_bs_preorder_traverse(node->l, visit);
 	_tree_bs_preorder_traverse(node->r, visit);
 }
-
-void tree_bs_preorder_traverse(tree_bs_t *tree, visit_fun_t *visit){
+*/
+void tree_bs_preorder_traverse(tree_bs_t *tree, tree_bs_visit_fun_t *visit){
 	//_tree_bs_preorder_traverse(tree->root, visit);
 	if(tree->root == NULL) return;
 	stack_t *st = stack_init(10, sizeof(char*));
@@ -207,15 +275,15 @@ void tree_bs_preorder_traverse(tree_bs_t *tree, visit_fun_t *visit){
 	}
 	stack_free(st);
 }
-
-void _tree_bs_postorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
+/*
+static void _tree_bs_postorder_traverse(tree_bs_node_t *node, visit_fun_t *visit){
 	if(node == NULL) return ;
 	_tree_bs_postorder_traverse(node->l, visit);
 	_tree_bs_postorder_traverse(node->r, visit);
 	visit(node);
 }
-
-void tree_bs_postorder_traverse(tree_bs_t *tree, visit_fun_t *visit){
+*/
+void tree_bs_postorder_traverse(tree_bs_t *tree, tree_bs_visit_fun_t *visit){
 //	_tree_bs_postorder_traverse(tree->root, visit);
 /*  
 	if(tree->root == NULL) return;

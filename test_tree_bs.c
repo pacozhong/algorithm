@@ -27,7 +27,7 @@ main(int argc, char* argv[]){
 	int tmp;
 	st *st_tmp;
 	tree_bs_node_t *st_ret;
-	int insert_ret, find_ret, delete_ret;
+	int insert_ret, find_ret, delete_ret, rotate_ret;
 	//insert loop
 	while(1){
 		printf("insert loop:\n");
@@ -88,5 +88,47 @@ main(int argc, char* argv[]){
 			tree_bs_postorder_traverse(tree, visit_st);
 			printf("\n");
 		}
+		printf("left rotate loop:\n");
+		//search loop
+		while(scanf("%d", &tmp) != EOF){
+			st_tmp = (st*)malloc(sizeof(st));
+			st_tmp->a = "a";
+			st_tmp->key = tmp;
+			st_tmp->pad = "pad";
+			rotate_ret = tree_bs_left_rotate(tree, st_tmp);
+			printf("root:0x%016lx\n", (int64_t)(tree->root));
+			if(rotate_ret != 0) {
+				printf("left rotate fail!\n");
+			}
+			free(st_tmp);
+			tree_bs_inorder_traverse(tree, visit_st);
+			printf("////////////\n");
+			tree_bs_preorder_traverse(tree, visit_st);
+			printf("////////////\n");
+			tree_bs_postorder_traverse(tree, visit_st);
+			printf("\n");
+		}
+
+		printf("right rotate loop:\n");
+		//search loop
+		while(scanf("%d", &tmp) != EOF){
+			st_tmp = (st*)malloc(sizeof(st));
+			st_tmp->a = "a";
+			st_tmp->key = tmp;
+			st_tmp->pad = "pad";
+			rotate_ret = tree_bs_right_rotate(tree, st_tmp);
+			printf("root:0x%016lx\n", (int64_t)(tree->root));
+			if(rotate_ret != 0) {
+				printf("right rotate fail!\n");
+			}
+			free(st_tmp);
+			tree_bs_inorder_traverse(tree, visit_st);
+			printf("////////////\n");
+			tree_bs_preorder_traverse(tree, visit_st);
+			printf("////////////\n");
+			tree_bs_postorder_traverse(tree, visit_st);
+			printf("\n");
+		}
+
 	}
 }

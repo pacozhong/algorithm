@@ -3,38 +3,14 @@
 #include <string.h>
 
 #include "stack.h"
+#include "tree_rb.h"
 
 #define RED 1
 #define BLACK 2
 
-typedef struct tree_rb_node {
-	void *data;
-	struct tree_rb_node *l;
-	struct tree_rb_node *r;
-	int cnt;
-	
-	int color;	
-	struct tree_rb_node *p;
-} tree_rb_node_t;
 
-/* 
- * function to compare two node,
- * return -1/1/0 whern a little/greater/equal to b
- */
-typedef int tree_rb_compare_fun_t(const void *a, const const void *b);
-
-typedef void tree_rb_visit_fun_t(const tree_rb_node_t *node);
-
-typedef struct tree_rb{
-	tree_rb_node_t *root;
-	
-	tree_rb_compare_fun_t *compare_fun;
-	size_t num_node;	
-} tree_rb_t;
-
-
-tree_rb_t* tree_rb_init(tree_rb_compare_fun_t *comapre_fun){
-	tree_rb_t * tr = (tree*)calloc(sizeof(tree_rb_t), 1);
+tree_rb_t* tree_rb_init(tree_rb_compare_fun_t *compare_fun){
+	tree_rb_t * tr = (tree_rb_t*)calloc(sizeof(tree_rb_t), 1);
 	if(tr == NULL) return NULL;
 	tr->root = NULL;
 	tr->compare_fun = compare_fun;
@@ -42,7 +18,23 @@ tree_rb_t* tree_rb_init(tree_rb_compare_fun_t *comapre_fun){
 	return tr;
 }
 
-static int _tree_rb_find(tree_rb_t* tree, tree_rb_node_t *node, void const *data, 
+int tree_rb_free(tree_rb_t *tree){
+	if(NULL == tree) return 0;
+	if(tree->root != NULL) return -1;
+	free(tree);
+	return 0;
+}
+
+int tree_rb_destroy(tree_rb_t *tree){
+	if(NULL == tree) return 0;
+	while(tree->root != NULL) {
+		tree_rb_delete(tree, tree->root->data);
+	}
+	free(tree);
+	return 0;
+}
+
+static int _tree_rb_find(tree_rb_t* tree, tree_rb_node_t *node, const void *data, 
 		tree_rb_node_t *p, tree_rb_node_t **ret_node){
 	if(tree == NULL) return -2;	
 	if(node == NULL) {
@@ -55,14 +47,14 @@ static int _tree_rb_find(tree_rb_t* tree, tree_rb_node_t *node, void const *data
 		if(ret_node != NULL)
 			*ret_node = node;
 		return 0;
-	}else if(comapre_ret > 0){
+	}else if(compare_ret > 0){
 		return _tree_rb_find(tree, node->r, data, node, ret_node);
 	}else {
 		return _tree_rb_find(tree, node->l, data, node, ret_node);
 	}
 }
 
-int tree_rb_find(tree_rb_t *tree, void const *data, tree_rb_node_t **ret_node){
+int tree_rb_find(tree_rb_t *tree, const void *data, tree_rb_node_t **ret_node){
 	return _tree_rb_find(tree, tree->root, data, NULL, ret_node);
 }
 
@@ -97,9 +89,13 @@ static int _tree_rb_right_rotate(tree_rb_node_t *pivot){
 }
 
 static void _tree_rb_insert_fix(tree_rb_t* tree, tree_rb_node_t *new_node){
-	while(new_node->p->color = RED){
+	printf("ret_node addr, 0x%016lx\n", (int64_t)new_node);
+	if(NULL != new_node){
+		printf("ret_node:\t0x%016lx %d(%d)%c p:\t0x%016lx\n", (int64_t)new_node, *((int*)((new_node->data) + sizeof(char *))), new_node->cnt, new_node->color == 1 ? 'R' : 'B', (int64_t)(new_node->p));
+	}
+	while(new_node->p->color == RED){
 		if(new_node->p == new_node->p->p->l){
-			if(new_node->p->p->r->color == RED){
+			if(new_node->p->p->r != NULL && new_node->p->p->r->color == RED){
 				new_node->p->p->r->color = BLACK;
 				new_node->p->color = BLACK;
 				new_node->p->p->color = RED;
@@ -122,7 +118,7 @@ static void _tree_rb_insert_fix(tree_rb_t* tree, tree_rb_node_t *new_node){
 			
 			}
 		}else {
-			if(new_node->p->p->l->color == RED){
+			if(new_node->p->p->l != NULL && new_node->p->p->l->color == RED){
 				new_node->p->p->l->color = BLACK;
 				new_node->p->color = BLACK;
 				new_node->p->p->color = RED;
@@ -142,14 +138,19 @@ static void _tree_rb_insert_fix(tree_rb_t* tree, tree_rb_node_t *new_node){
 			
 			}
 		}
-	
+		tree->root->color = BLACK;
+		if(new_node == tree->root) break; 
 	}	
 }
 
-int tree_rb_insert(tree_rb_t *tree, void const *data){
+int tree_rb_insert(tree_rb_t *tree, void *data){
 	if(tree == NULL) return -2;
 	tree_rb_node_t *ret_node;
 	int find_ret = _tree_rb_find(tree, tree->root, data, NULL, &ret_node);
+	printf("ret_node addr, 0x%016lx\n", (int64_t)ret_node);
+	if(NULL != ret_node){
+		printf("ret_node:\t0x%016lx %d(%d)%c\n", (int64_t)ret_node, *((int*)((ret_node->data) + sizeof(char *))), ret_node->cnt, ret_node->color == 1 ? 'R' : 'B');
+	}
 	if(0 == find_ret){
 		ret_node->cnt ++;
 		return 0;
@@ -183,12 +184,12 @@ int tree_rb_insert(tree_rb_t *tree, void const *data){
 }
 
 //delete fix
-void _tree_rb_delete_fix(tree_rb_t *tree, tree_rb_node_t *x){
+static void _tree_rb_delete_fix(tree_rb_t *tree, tree_rb_node_t *x){
 	tree_rb_node_t *w;
 	while(x->color == BLACK && x != tree->root){
 		if(x == x->p->l){
 			w = x->p->r;
-			if(w->color == RED){
+			if(w != NULL && w->color == RED){
 				w->color = BLACK;
 				x->p->color = RED;
 				_tree_rb_left_rotate(x->p);
@@ -197,13 +198,20 @@ void _tree_rb_delete_fix(tree_rb_t *tree, tree_rb_node_t *x){
 					tree->root = x->p->p;
 				}
 				w = x->p->r;
+			}else if(w == NULL) {
+				/*
+				 *no such condition, cause if exists,
+				 *x path has at least two B node, w path has only one B node
+				 */
+				printf("!!!!w is NULL\n");
 			}
-			if(w->l->color == BLACK && w->r->color == BLACK){
+			if((w->l == NULL || w->l->color == BLACK) && (w->r == NULL || w->r->color == BLACK)){
 				w->color = RED;
 				x = x->p;
-			}else if(w->r->color == BLACK){
+			}else if(w->r == NULL || w->r->color == BLACK){
 				//w->l->color == RED
-				w->l->color = BLACK;
+				if(w->l != NULL)
+					w->l->color = BLACK;
 				w->color = RED;
 				_tree_rb_right_rotate(w);
 				w = x->p->r;
@@ -219,20 +227,25 @@ void _tree_rb_delete_fix(tree_rb_t *tree, tree_rb_node_t *x){
 			}
 		}else {
 			w = x->p->l;
-			if(w->color == RED){
+			if(w != NULL && w->color == RED){
 				w->color = BLACK;
 				x->p->color = RED;
 				_tree_rb_right_rotate(x->p);
 				//ajust root
 				if(x->p == tree->root) tree->root = x->p->p;
 				w = x->p->l;
+			}else if(w == NULL){
+			
+				//not exist
+				printf("!!!!w is NULL\n");
 			}
-			if(w->l->color == BLACK && w->r->color == BLACK){
+			if((w->l == NULL || w->l->color == BLACK) && (w->r == NULL || w->r->color == BLACK)){
 				w->color = RED;
 				x = x->p;
-			}else if(w->l->color == BLACK){
+			}else if(w->l == NULL || w->l->color == BLACK){
 				//w->r->color == RED
-				w->r->color = BLACK;
+				if(w->r != NULL)
+					w->r->color = BLACK;
 				w->color = RED;
 				_tree_rb_left_rotate(w);
 				w = x->p->l;
@@ -252,10 +265,14 @@ void _tree_rb_delete_fix(tree_rb_t *tree, tree_rb_node_t *x){
 }
 
 //delete rb tree node, data will be free
-int tree_rb_delete(tree_rb_t *tree, void const *data){
+int tree_rb_delete(tree_rb_t *tree, const void *data){
 	if(NULL == tree) return -2;	
 	tree_rb_node_t* ret_node;
 	int find_ret = _tree_rb_find(tree, tree->root, data, NULL, &ret_node);
+	printf("ret_node addr, 0x%016lx\n", (int64_t)ret_node);
+	if(NULL != ret_node){
+		printf("ret_node:\t0x%016lx %d(%d)%c\n", (int64_t)ret_node, *((int*)((ret_node->data) + sizeof(char*))), ret_node->cnt, ret_node->color == 1 ? 'R' : 'B');
+	}
 	if(0 != find_ret){
 		return -1;	
 	}
@@ -275,7 +292,16 @@ int tree_rb_delete(tree_rb_t *tree, void const *data){
 	}
 	if(y->l == NULL) x = y->r;
 	else x = y->l;
-
+	int sub_tag = 0;
+	if(x == NULL){
+		//construct a fake black node to substitude x
+		sub_tag = 1;
+		x = (tree_rb_node_t*)calloc(sizeof(tree_rb_node_t), 1);
+		x->l = NULL;
+		x->r = NULL;
+		x->p = y;
+		x->color = BLACK;
+	} 
 	x->p = y->p;
 	if(x->p == NULL) tree->root = x;
 	else {
@@ -291,9 +317,76 @@ int tree_rb_delete(tree_rb_t *tree, void const *data){
 	if(y->color == BLACK){
 		_tree_rb_delete_fix(tree, x);	
 	}
+	if(sub_tag == 1){
+		if(x->p->l == x) x->p->l = NULL;
+		else x->p->r = NULL;
+		free(x);
+	}
 	//free y
 	/* !!!! free y's data */
 	free(y->data);
 	free(y);	
 	return 0;
+}
+
+
+void tree_rb_inorder_traverse(tree_rb_t *tree, tree_rb_visit_fun_t *visit){
+	if(tree->root == NULL) return;
+	stack_t * st = stack_init(10, sizeof(char*));
+	tree_rb_node_t *node = tree->root;
+	int64_t *tmp = 0;
+	while(stack_count(st) != 0 || node != NULL){
+		if(node != NULL){
+//			printf("node:0x%016lx\n", (int64_t)node);
+			stack_push(st, &node);
+			node = node->l;
+		}else {
+			stack_pop(st, (void **)&tmp);
+			node = (tree_rb_node_t *) (*tmp);
+//			printf("poped node:0x%016lx\n", (int64_t)node);
+			visit(node);
+			node = node->r;
+		}
+///		stack_status(st);
+	}
+	stack_free(st);
+}
+
+void tree_rb_preorder_traverse(tree_rb_t *tree, tree_rb_visit_fun_t *visit){
+	if(tree->root == NULL) return;
+	stack_t *st = stack_init(10, sizeof(char*));
+	stack_push(st, &(tree->root));
+	tree_rb_node_t *node = NULL;
+	int64_t *tmp = 0;
+	while(stack_count(st) != 0){
+		stack_pop(st, (void **)&tmp);
+		node = (tree_rb_node_t *) (*tmp);
+		visit(node);
+		if(node->r != NULL) stack_push(st, &(node->r));
+		if(node->l != NULL) stack_push(st, &(node->l));
+	}
+	stack_free(st);
+}
+
+void tree_rb_postorder_traverse(tree_rb_t *tree, tree_rb_visit_fun_t *visit){
+	if(tree->root == NULL) return;
+	stack_t *st1 = stack_init(10, sizeof(char*));
+	stack_t *st2 = stack_init(10, sizeof(char*));
+	tree_rb_node_t *node = tree->root;
+	stack_push(st1, &node);
+	int64_t *tmp = 0;
+	while(node != NULL && stack_count(st1) != 0){
+		stack_pop(st1, (void **)(&tmp));
+		node = (tree_rb_node_t*) (*tmp);
+		stack_push(st2, &node);
+		if(node->l != NULL) stack_push(st1, &(node->l));
+		if(node->r != NULL) stack_push(st1, &(node->r));
+	}	
+	while(stack_count(st2) != 0){
+		stack_pop(st2, (void **)(&tmp));
+		node = (tree_rb_node_t*) (*tmp);
+		visit(node);
+	}
+	stack_free(st1);
+	stack_free(st2);
 }

@@ -28,6 +28,8 @@ tree_bs_t *tree_bs_init(tree_bs_compare_fun_t* compare_fun);
 
 int tree_bs_free(tree_bs_t *tr);
 
+int tree_bs_destroy(tree_bs_t *tr);
+
 int tree_bs_find(tree_bs_t *tree, const void* data, tree_bs_node_t **ret_node);
 
 int tree_bs_insert(tree_bs_t *tree, void* data);

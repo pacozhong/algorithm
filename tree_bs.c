@@ -19,11 +19,20 @@ tree_bs_t *tree_bs_init(tree_bs_compare_fun_t* compare_fun){
 	
 	return tr;
 }
-
+//do not free tr when root is NOT NULL
 int tree_bs_free(tree_bs_t *tr){
 	if(tr == NULL) return 0;
 	if(tr->root != NULL) return -1;
 	free(tr);
+	return 0;
+}
+//if root is not NULL delete every node, then free tree
+int tree_bs_destroy(tree_bs_t *tree){
+	if(tree == NULL) return 0;
+	while(tree->root != NULL){
+		tree_bs_delete(tree, tree->root->data);
+	}
+	free(tree);
 	return 0;
 }
 /* 

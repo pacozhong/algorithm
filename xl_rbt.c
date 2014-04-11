@@ -89,10 +89,6 @@ static int _xl_rbt_right_rotate(xl_rbt_node_t *pivot){
 }
 
 static void _xl_rbt_insert_fix(xl_rbt_t* tree, xl_rbt_node_t *new_node){
-	printf("ret_node addr, 0x%016lx\n", (int64_t)new_node);
-	if(NULL != new_node){
-		printf("ret_node:\t0x%016lx %d(%d)%c p:\t0x%016lx\n", (int64_t)new_node, *((int*)((new_node->data) + sizeof(char *))), new_node->cnt, new_node->color == 1 ? 'R' : 'B', (int64_t)(new_node->p));
-	}
 	while(new_node->p->color == RED){
 		if(new_node->p == new_node->p->p->l){
 			if(new_node->p->p->r != NULL && new_node->p->p->r->color == RED){
@@ -147,10 +143,6 @@ int xl_rbt_insert(xl_rbt_t *tree, void *data){
 	if(tree == NULL) return -2;
 	xl_rbt_node_t *ret_node;
 	int find_ret = _xl_rbt_find(tree, tree->root, data, NULL, &ret_node);
-	printf("ret_node addr, 0x%016lx\n", (int64_t)ret_node);
-	if(NULL != ret_node){
-		printf("ret_node:\t0x%016lx %d(%d)%c\n", (int64_t)ret_node, *((int*)((ret_node->data) + sizeof(char *))), ret_node->cnt, ret_node->color == 1 ? 'R' : 'B');
-	}
 	if(0 == find_ret){
 		ret_node->cnt ++;
 		return 0;
@@ -269,10 +261,6 @@ int xl_rbt_delete(xl_rbt_t *tree, const void *data){
 	if(NULL == tree) return -2;	
 	xl_rbt_node_t* ret_node;
 	int find_ret = _xl_rbt_find(tree, tree->root, data, NULL, &ret_node);
-	printf("ret_node addr, 0x%016lx\n", (int64_t)ret_node);
-	if(NULL != ret_node){
-		printf("ret_node:\t0x%016lx %d(%d)%c\n", (int64_t)ret_node, *((int*)((ret_node->data) + sizeof(char*))), ret_node->cnt, ret_node->color == 1 ? 'R' : 'B');
-	}
 	if(0 != find_ret){
 		return -1;	
 	}

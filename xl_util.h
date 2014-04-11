@@ -11,7 +11,7 @@ int xl_sysbit();
 
 int xl_endian();
 
-char* xl_print_addr(void *p, char *ret);
+char* xl_print_addr(const void *p, char *ret);
 
 #endif
 

@@ -18,7 +18,7 @@ int xl_endian(){
     else return XL_LSB;	
 }
 
-char* xl_print_addr(void *p, char *ret){
+char* xl_print_addr(const void *p, char *ret){
 	char *retp = ret;
 	int8_t base[] = "0123456789ABCDEF";
 	int length = xl_sysbit() / 8;

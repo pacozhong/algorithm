@@ -12,7 +12,7 @@ typedef struct xl_bst_node{
  * function to compare two node,
  * return -1/1/0 whern a little/greater/equal to b
  */
-typedef int xl_bst_compare_fun_t(const void *a, const const void *b);
+typedef int xl_bst_compare_fun_t(const void *a,  const void *b);
 
 typedef void xl_bst_visit_fun_t(const xl_bst_node_t *node);
 

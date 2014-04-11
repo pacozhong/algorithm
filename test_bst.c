@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "xl_util.h"
 #include "xl_bst.h"
 
 /* test code */
@@ -17,7 +18,9 @@ int compare_st(const void *a, const void *b){
 }
 
 void visit_st(const xl_bst_node_t *node){
-	printf("visit:\t0x%016lx %d(%lu)\n", (int64_t)node, ((st*)(node->data))->key, node->cnt);
+	char *a = (char*)malloc(sizeof(char) * 17);
+	printf("visit:\t%s %d(%lu)\n", xl_print_addr(node, a), ((st*)(node->data))->key, node->cnt);
+	free(a);
 }
 
 int
@@ -36,7 +39,9 @@ main(int argc, char* argv[]){
 			st_tmp->a = "a";
 			st_tmp->key = tmp;
 			st_tmp->pad = "pad";
-			printf("st_tmp:0x%016lx\n", (int64_t)st_tmp);
+			printf("st_tmp:");
+			xl_print_addr(st_tmp, NULL);
+			printf("\n");
 			printf("key:%d\n", st_tmp->key);
 			insert_ret = xl_bst_insert(tree, st_tmp);
 			if(insert_ret != 0) {
@@ -76,7 +81,9 @@ main(int argc, char* argv[]){
 			st_tmp->key = tmp;
 			st_tmp->pad = "pad";
 			delete_ret = xl_bst_delete(tree, st_tmp);
-			printf("root:0x%016lx\n", (int64_t)(tree->root));
+			printf("root:");
+			xl_print_addr(tree->root, NULL);
+			printf("\n");
 			if(delete_ret != 0) {
 				printf("delete fail!\n");
 			}
@@ -96,7 +103,9 @@ main(int argc, char* argv[]){
 			st_tmp->key = tmp;
 			st_tmp->pad = "pad";
 			rotate_ret = xl_bst_left_rotate(tree, st_tmp);
-			printf("root:0x%016lx\n", (int64_t)(tree->root));
+			printf("root:");
+			xl_print_addr(tree->root, NULL);
+			printf("\n");
 			if(rotate_ret != 0) {
 				printf("left rotate fail!\n");
 			}
@@ -117,7 +126,9 @@ main(int argc, char* argv[]){
 			st_tmp->key = tmp;
 			st_tmp->pad = "pad";
 			rotate_ret = xl_bst_right_rotate(tree, st_tmp);
-			printf("root:0x%016lx\n", (int64_t)(tree->root));
+			printf("root:");
+			xl_print_addr(tree->root, NULL);
+			printf("\n");
 			if(rotate_ret != 0) {
 				printf("right rotate fail!\n");
 			}

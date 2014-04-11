@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "xl_util.h"
 #include "xl_stack.h"
 
 #define NO_ELE -1;//no element in stack
@@ -68,7 +70,8 @@ int xl_stack_status(xl_stack_t *p){
 	printf("oszie:%lu, size:%lu, count:%lu\n", p->osize, p->size, xl_stack_count(p));
 	while(pt >= p->base){
 		void *tmp = pt;
-		printf("0x%016lx\t", (int64_t)tmp);
+		xl_print_addr(tmp, NULL);
+		printf("\n");
 
 		while(tmp < pt + p->osize){
 			printf("0x%c%c, ", base[(*((int8_t*)tmp) >> 4) & 0x0F], base[*((int8_t*)tmp) & 0x0F]);

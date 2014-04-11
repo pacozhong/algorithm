@@ -6,7 +6,8 @@ LINK= -L./
 INCLUDE= -I./
 RUN = -Wl,-rpath,./
 
-SRC = xl_stack.c \
+SRC = xl_util.c \
+	  xl_stack.c \
 	  xl_bst.c \
 	  xl_rbt.c
 

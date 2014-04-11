@@ -23,6 +23,10 @@ void visit_st(const xl_bst_node_t *node){
 	free(a);
 }
 
+int get_key(void *data){
+	return ((st*)data)->key;
+}
+
 int
 main(int argc, char* argv[]){
 	xl_bst_t *tree = xl_bst_init(compare_st);
@@ -53,6 +57,7 @@ main(int argc, char* argv[]){
 			printf("////////////\n");
 			xl_bst_postorder_traverse(tree, visit_st);
 			printf("\n");
+			xl_visual_bst(tree, "");
 		}
 		printf("find loop:\n");
 		//search loop

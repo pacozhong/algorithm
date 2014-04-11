@@ -237,7 +237,7 @@ static void _xl_bst_inorder_traverse(xl_bst_node_t *node, visit_fun_t *visit){
 	_xl_bst_inorder_traverse(node->r, visit);
 }
 */
-void xl_bst_inorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
+void xl_bst_inorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit, void *data){
 //	_xl_bst_inorder_traverse(xl_tree->root, visit);
 	//no recusive implent
 	if(xl_tree->root == NULL) return;
@@ -253,7 +253,7 @@ void xl_bst_inorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
 			xl_stack_pop(st, (void **)&tmp);
 			node = (xl_bst_node_t *) (*tmp);
 //			printf("poped node:0x%016lx\n", (int64_t)node);
-			visit(node);
+			visit(node, data);
 			node = node->r;
 		}
 ///		xl_stack_status(st);
@@ -268,7 +268,7 @@ static void _xl_bst_preorder_traverse(xl_bst_node_t *node, visit_fun_t *visit){
 	_xl_bst_preorder_traverse(node->r, visit);
 }
 */
-void xl_bst_preorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
+void xl_bst_preorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit, void *data){
 	//_xl_bst_preorder_traverse(xl_tree->root, visit);
 	if(xl_tree->root == NULL) return;
 	xl_stack_t *st = xl_stack_init(10, sizeof(char*));
@@ -278,7 +278,7 @@ void xl_bst_preorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
 	while(xl_stack_count(st) != 0){
 		xl_stack_pop(st, (void **)&tmp);
 		node = (xl_bst_node_t *) (*tmp);
-		visit(node);
+		visit(node, data);
 		if(node->r != NULL) xl_stack_push(st, &(node->r));
 		if(node->l != NULL) xl_stack_push(st, &(node->l));
 	}
@@ -292,7 +292,7 @@ static void _xl_bst_postorder_traverse(xl_bst_node_t *node, visit_fun_t *visit){
 	visit(node);
 }
 */
-void xl_bst_postorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
+void xl_bst_postorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit, void *data){
 //	_xl_bst_postorder_traverse(xl_tree->root, visit);
 /*  
 	if(xl_tree->root == NULL) return;
@@ -343,7 +343,7 @@ void xl_bst_postorder_traverse(xl_bst_t *xl_tree, xl_bst_visit_fun_t *visit){
 	while(xl_stack_count(st2) != 0){
 		xl_stack_pop(st2, (void **)(&tmp));
 		node = (xl_bst_node_t*) (*tmp);
-		visit(node);
+		visit(node, data);
 	}
 	xl_stack_free(st1);
 	xl_stack_free(st2);

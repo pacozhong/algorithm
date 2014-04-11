@@ -14,7 +14,7 @@ typedef struct xl_bst_node{
  */
 typedef int xl_bst_compare_fun_t(const void *a,  const void *b);
 
-typedef void xl_bst_visit_fun_t(const xl_bst_node_t *node);
+typedef void xl_bst_visit_fun_t(const xl_bst_node_t *node, void *data);
 
 typedef struct xl_bst
 {
@@ -40,10 +40,10 @@ int xl_bst_left_rotate(xl_bst_t *tree, const void *data);
 
 int xl_bst_right_rotate(xl_bst_t *tree, const void *data);
 
-void xl_bst_inorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit);
+void xl_bst_inorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit, void *data);
 
-void xl_bst_preorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit);
+void xl_bst_preorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit, void *data);
 
-void xl_bst_postorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit);
+void xl_bst_postorder_traverse(xl_bst_t *tree, xl_bst_visit_fun_t *visit, void *data);
 #endif
 

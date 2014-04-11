@@ -6,17 +6,17 @@ LINK= -L./
 INCLUDE= -I./
 RUN = -Wl,-rpath,./
 
-SRC = stack.c \
-	  tree_bs.c \
-	  tree_rb.c
+SRC = xl_stack.c \
+	  xl_bst.c \
+	  xl_rbt.c
 
-all: test_tree_bs test_tree_rb 
+all: test_bst test_rbt 
 #all: stack 
 
-test_tree_bs: $(SRC:.c=.o) test_tree_bs.c
+test_bst: $(SRC:.c=.o) test_bst.c
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LINK) $(RUN)
 
-test_tree_rb: $(SRC:.c=.o) test_tree_rb.c
+test_rbt: $(SRC:.c=.o) test_rbt.c
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LINK) $(RUN)
 
 %.o: %.cpp Makefile
@@ -29,5 +29,5 @@ test_tree_rb: $(SRC:.c=.o) test_tree_rb.c
 
 
 clean: 
-	rm -f $(SRC:.c=.o) test_tree_bs test_tree_rb 
+	rm -f $(SRC:.c=.o) test_bst test_rbt
 install:

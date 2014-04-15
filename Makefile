@@ -9,7 +9,8 @@ RUN = -Wl,-rpath,./
 SRC = xl_util.c \
 	  xl_stack.c \
 	  xl_bst.c \
-	  xl_rbt.c
+	  xl_rbt.c \
+	  xl_visual.c
 
 all: test_bst test_rbt 
 #all: stack 

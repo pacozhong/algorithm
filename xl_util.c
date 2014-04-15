@@ -25,7 +25,7 @@ char* xl_print_addr(const void *p, char *ret){
 	int endian = xl_endian();
 	char *tmp = (char*)(&p);
 	if(endian == XL_LSB)
-		tmp += length;
+		tmp += (length - 1);
 	if(ret != NULL) {
 		*ret = '0';
 		ret ++;

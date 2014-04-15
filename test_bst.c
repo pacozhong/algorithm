@@ -3,6 +3,7 @@
 
 #include "xl_util.h"
 #include "xl_bst.h"
+#include "xl_visual.h"
 
 /* test code */
 
@@ -17,13 +18,15 @@ int compare_st(const void *a, const void *b){
 	return ((st*)a)->key - ((st*)b)->key;
 }
 
-void visit_st(const xl_bst_node_t *node){
+void visit_st(const xl_bst_node_t *node, void *data){
 	char *a = (char*)malloc(sizeof(char) * 17);
 	printf("visit:\t%s %d(%lu)\n", xl_print_addr(node, a), ((st*)(node->data))->key, node->cnt);
+	printf("visit:\t0x%016lx %d(%lu)\n", (int64_t)node, ((st*)(node->data))->key, node->cnt);
+
 	free(a);
 }
 
-int get_key(void *data){
+int get_key(const void *data){
 	return ((st*)data)->key;
 }
 
@@ -34,7 +37,7 @@ main(int argc, char* argv[]){
 	int tmp;
 	st *st_tmp;
 	xl_bst_node_t *st_ret;
-	int insert_ret, find_ret, delete_ret, rotate_ret;
+	int insert_ret, find_ret, delete_ret, rotate_ret, visual_ret;
 	//insert loop
 	while(1){
 		printf("insert loop:\n");
@@ -51,14 +54,15 @@ main(int argc, char* argv[]){
 			if(insert_ret != 0) {
 				printf("insert error!\n");
 			}
-			xl_bst_inorder_traverse(tree, visit_st);
+			xl_bst_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_preorder_traverse(tree, visit_st);
+			xl_bst_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_postorder_traverse(tree, visit_st);
+			xl_bst_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
-			xl_visual_bst(tree, "");
 		}
+	    visual_ret = xl_visual_bst(tree, "/root/algo/visual/bst.gv", get_key);	
+		if(0 != visual_ret) printf("visual error!\n");
 		printf("find loop:\n");
 		//search loop
 		while(scanf("%d", &tmp) != EOF){
@@ -71,11 +75,11 @@ main(int argc, char* argv[]){
 				printf("find fail!\n");
 			}
 			free(st_tmp);
-			xl_bst_inorder_traverse(tree, visit_st);
+			xl_bst_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_preorder_traverse(tree, visit_st);
+			xl_bst_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_postorder_traverse(tree, visit_st);
+			xl_bst_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 		printf("delete loop:\n");
@@ -93,11 +97,11 @@ main(int argc, char* argv[]){
 				printf("delete fail!\n");
 			}
 			free(st_tmp);
-			xl_bst_inorder_traverse(tree, visit_st);
+			xl_bst_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_preorder_traverse(tree, visit_st);
+			xl_bst_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_postorder_traverse(tree, visit_st);
+			xl_bst_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 		printf("left rotate loop:\n");
@@ -115,11 +119,11 @@ main(int argc, char* argv[]){
 				printf("left rotate fail!\n");
 			}
 			free(st_tmp);
-			xl_bst_inorder_traverse(tree, visit_st);
+			xl_bst_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_preorder_traverse(tree, visit_st);
+			xl_bst_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_postorder_traverse(tree, visit_st);
+			xl_bst_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 
@@ -138,11 +142,11 @@ main(int argc, char* argv[]){
 				printf("right rotate fail!\n");
 			}
 			free(st_tmp);
-			xl_bst_inorder_traverse(tree, visit_st);
+			xl_bst_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_preorder_traverse(tree, visit_st);
+			xl_bst_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_bst_postorder_traverse(tree, visit_st);
+			xl_bst_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 

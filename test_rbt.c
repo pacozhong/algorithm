@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "xl_util.h"
 #include "xl_rbt.h"
+#include "xl_visual.h"
 /* test code */
 
 typedef struct st {
@@ -16,12 +17,14 @@ int compare_st(const void *a, const void *b){
 	return ((st*)a)->key - ((st*)b)->key;
 }
 
-void visit_st(const xl_rbt_node_t *node){
+void visit_st(const xl_rbt_node_t *node, void *data){
 	char *a = (char*)malloc(sizeof(char) * 17);
-	printf("visit:\t%s %d(%d)%c\n", xl_print_addr(node, a), ((st*)(node->data))->key, node->cnt, node->color == 1 ? 'R' : 'B');
+	printf("visit:\t%s %d(%lu)%c\n", xl_print_addr(node, a), ((st*)(node->data))->key, node->cnt, node->color == 1 ? 'R' : 'B');
 	free(a);
 }
-
+int get_key(const void *data){
+	return ((st*)data)->key;
+}
 int
 main(int argc, char* argv[]){
 	xl_rbt_t *tree = xl_rbt_init(compare_st);
@@ -29,8 +32,7 @@ main(int argc, char* argv[]){
 	int tmp;
 	st *st_tmp;
 	xl_rbt_node_t *st_ret;
-	int insert_ret, find_ret, delete_ret;
-	//insert loop
+	int insert_ret, find_ret, delete_ret, visual_ret;
 	while(1){
 		printf("insert loop:\n");
 		while(scanf("%d", &tmp) != EOF){
@@ -46,15 +48,17 @@ main(int argc, char* argv[]){
 			if(insert_ret != 0) {
 				printf("insert error!\n");
 			}
-			xl_rbt_inorder_traverse(tree, visit_st);
+			xl_rbt_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_preorder_traverse(tree, visit_st);
+			xl_rbt_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_postorder_traverse(tree, visit_st);
+			xl_rbt_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
+		visual_ret = xl_visual_rbt(tree, "/root/algo/visual/rbt.gv", get_key);
+		if(visual_ret != 0)
+			printf("visual error!\n");
 		printf("find loop:\n");
-		//search loop
 		while(scanf("%d", &tmp) != EOF){
 			st_tmp = (st*)malloc(sizeof(st));
 			st_tmp->a = "a";
@@ -65,15 +69,14 @@ main(int argc, char* argv[]){
 				printf("find fail!\n");
 			}
 			free(st_tmp);
-			xl_rbt_inorder_traverse(tree, visit_st);
+			xl_rbt_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_preorder_traverse(tree, visit_st);
+			xl_rbt_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_postorder_traverse(tree, visit_st);
+			xl_rbt_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 		printf("delete loop:\n");
-		//search loop
 		while(scanf("%d", &tmp) != EOF){
 			st_tmp = (st*)malloc(sizeof(st));
 			st_tmp->a = "a";
@@ -87,11 +90,14 @@ main(int argc, char* argv[]){
 				printf("delete fail!\n");
 			}
 			free(st_tmp);
-			xl_rbt_inorder_traverse(tree, visit_st);
+			visual_ret = xl_visual_rbt(tree, "/root/algo/visual/rbt.gv", get_key);
+			if(visual_ret != 0)
+				printf("visual error!\n");
+			xl_rbt_inorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_preorder_traverse(tree, visit_st);
+			xl_rbt_preorder_traverse(tree, visit_st, NULL);
 			printf("////////////\n");
-			xl_rbt_postorder_traverse(tree, visit_st);
+			xl_rbt_postorder_traverse(tree, visit_st, NULL);
 			printf("\n");
 		}
 	}

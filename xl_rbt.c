@@ -5,10 +5,6 @@
 #include "xl_stack.h"
 #include "xl_rbt.h"
 
-#define RED 1
-#define BLACK 2
-
-
 xl_rbt_t* xl_rbt_init(xl_rbt_compare_fun_t *compare_fun){
 	xl_rbt_t * tr = (xl_rbt_t*)calloc(sizeof(xl_rbt_t), 1);
 	if(tr == NULL) return NULL;
@@ -89,12 +85,12 @@ static int _xl_rbt_right_rotate(xl_rbt_node_t *pivot){
 }
 
 static void _xl_rbt_insert_fix(xl_rbt_t* tree, xl_rbt_node_t *new_node){
-	while(new_node->p->color == RED){
+	while(new_node->p->color == XL_RED){
 		if(new_node->p == new_node->p->p->l){
-			if(new_node->p->p->r != NULL && new_node->p->p->r->color == RED){
-				new_node->p->p->r->color = BLACK;
-				new_node->p->color = BLACK;
-				new_node->p->p->color = RED;
+			if(new_node->p->p->r != NULL && new_node->p->p->r->color == XL_RED){
+				new_node->p->p->r->color = XL_BLACK;
+				new_node->p->color = XL_BLACK;
+				new_node->p->p->color = XL_RED;
 				new_node = new_node->p->p;
 			}else {
 				if(new_node->p->r == new_node){
@@ -103,8 +99,8 @@ static void _xl_rbt_insert_fix(xl_rbt_t* tree, xl_rbt_node_t *new_node){
 					_xl_rbt_left_rotate(new_node);
 				}
 				else {
-					new_node->p->color = BLACK;
-					new_node->p->p->color = RED; 	
+					new_node->p->color = XL_BLACK;
+					new_node->p->p->color = XL_RED; 	
 					_xl_rbt_right_rotate(new_node->p->p);	
 					//ajust root
 					if(tree->root == new_node->p->r){
@@ -114,18 +110,18 @@ static void _xl_rbt_insert_fix(xl_rbt_t* tree, xl_rbt_node_t *new_node){
 			
 			}
 		}else {
-			if(new_node->p->p->l != NULL && new_node->p->p->l->color == RED){
-				new_node->p->p->l->color = BLACK;
-				new_node->p->color = BLACK;
-				new_node->p->p->color = RED;
+			if(new_node->p->p->l != NULL && new_node->p->p->l->color == XL_RED){
+				new_node->p->p->l->color = XL_BLACK;
+				new_node->p->color = XL_BLACK;
+				new_node->p->p->color = XL_RED;
 				new_node = new_node->p->p;
 			}else {
 				if(new_node->p->l == new_node){
 					new_node = new_node->p;
 					_xl_rbt_right_rotate(new_node);
 				}else {
-					new_node->p->color = BLACK;
-					new_node->p->p->color = RED;
+					new_node->p->color = XL_BLACK;
+					new_node->p->p->color = XL_RED;
 					_xl_rbt_left_rotate(new_node->p->p);
 					if(tree->root == new_node->p->l){
 						tree->root = new_node->p;
@@ -134,7 +130,7 @@ static void _xl_rbt_insert_fix(xl_rbt_t* tree, xl_rbt_node_t *new_node){
 			
 			}
 		}
-		tree->root->color = BLACK;
+		tree->root->color = XL_BLACK;
 		if(new_node == tree->root) break; 
 	}	
 }
@@ -152,14 +148,14 @@ int xl_rbt_insert(xl_rbt_t *tree, void *data){
 	xl_rbt_node_t *new_node = (xl_rbt_node_t*)calloc(sizeof(xl_rbt_node_t), 1);
 	new_node->l = NULL;
     new_node->r = NULL;
-	new_node->color = RED;	
+	new_node->color = XL_RED;	
 	new_node->data = data;
 	new_node->p = NULL;
 	new_node->cnt = 1;
 	//root is NULL
 	if(ret_node == NULL){
 		tree->root = new_node;
-		new_node->color = BLACK;
+		new_node->color = XL_BLACK;
 		return 0;	
 	}
 	//root is not NULL, insert
@@ -178,12 +174,12 @@ int xl_rbt_insert(xl_rbt_t *tree, void *data){
 //delete fix
 static void _xl_rbt_delete_fix(xl_rbt_t *tree, xl_rbt_node_t *x){
 	xl_rbt_node_t *w;
-	while(x->color == BLACK && x != tree->root){
+	while(x->color == XL_BLACK && x != tree->root){
 		if(x == x->p->l){
 			w = x->p->r;
-			if(w != NULL && w->color == RED){
-				w->color = BLACK;
-				x->p->color = RED;
+			if(w != NULL && w->color == XL_RED){
+				w->color = XL_BLACK;
+				x->p->color = XL_RED;
 				_xl_rbt_left_rotate(x->p);
 				//ajust root
 				if(x->p == tree->root){
@@ -197,21 +193,21 @@ static void _xl_rbt_delete_fix(xl_rbt_t *tree, xl_rbt_node_t *x){
 				 */
 				printf("!!!!w is NULL\n");
 			}
-			if((w->l == NULL || w->l->color == BLACK) && (w->r == NULL || w->r->color == BLACK)){
-				w->color = RED;
+			if((w->l == NULL || w->l->color == XL_BLACK) && (w->r == NULL || w->r->color == XL_BLACK)){
+				w->color = XL_RED;
 				x = x->p;
-			}else if(w->r == NULL || w->r->color == BLACK){
-				//w->l->color == RED
+			}else if(w->r == NULL || w->r->color == XL_BLACK){
+				//w->l->color == XL_RED
 				if(w->l != NULL)
-					w->l->color = BLACK;
-				w->color = RED;
+					w->l->color = XL_BLACK;
+				w->color = XL_RED;
 				_xl_rbt_right_rotate(w);
 				w = x->p->r;
 			}else{
-				//w->r->color == RED, w->l->color RED OR BLACK
+				//w->r->color == XL_RED, w->l->color XL_RED OR XL_BLACK
 				w->color = x->p->color;
-				x->p->color = BLACK;
-				w->r->color = BLACK;
+				x->p->color = XL_BLACK;
+				w->r->color = XL_BLACK;
 				_xl_rbt_left_rotate(x->p);
 				//ajust root
 				if(x->p == tree->root) tree->root = x->p->p;
@@ -219,9 +215,9 @@ static void _xl_rbt_delete_fix(xl_rbt_t *tree, xl_rbt_node_t *x){
 			}
 		}else {
 			w = x->p->l;
-			if(w != NULL && w->color == RED){
-				w->color = BLACK;
-				x->p->color = RED;
+			if(w != NULL && w->color == XL_RED){
+				w->color = XL_BLACK;
+				x->p->color = XL_RED;
 				_xl_rbt_right_rotate(x->p);
 				//ajust root
 				if(x->p == tree->root) tree->root = x->p->p;
@@ -231,21 +227,21 @@ static void _xl_rbt_delete_fix(xl_rbt_t *tree, xl_rbt_node_t *x){
 				//not exist
 				printf("!!!!w is NULL\n");
 			}
-			if((w->l == NULL || w->l->color == BLACK) && (w->r == NULL || w->r->color == BLACK)){
-				w->color = RED;
+			if((w->l == NULL || w->l->color == XL_BLACK) && (w->r == NULL || w->r->color == XL_BLACK)){
+				w->color = XL_RED;
 				x = x->p;
-			}else if(w->l == NULL || w->l->color == BLACK){
-				//w->r->color == RED
+			}else if(w->l == NULL || w->l->color == XL_BLACK){
+				//w->r->color == XL_RED
 				if(w->r != NULL)
-					w->r->color = BLACK;
-				w->color = RED;
+					w->r->color = XL_BLACK;
+				w->color = XL_RED;
 				_xl_rbt_left_rotate(w);
 				w = x->p->l;
 			}else {
-				//w->r->color == RED. w->l->color RED OR BLACK
+				//w->r->color == XL_RED. w->l->color XL_RED OR XL_BLACK
 				w->color = x->p->color;
-				x->p->color = BLACK;
-				w->l->color = BLACK;
+				x->p->color = XL_BLACK;
+				w->l->color = XL_BLACK;
 				_xl_rbt_left_rotate(x->p);
 				//ajust root
 				if(x->p == tree->root) tree->root = x->p->p;
@@ -253,7 +249,7 @@ static void _xl_rbt_delete_fix(xl_rbt_t *tree, xl_rbt_node_t *x){
 			}
 		}		
 	}
-	x->color = BLACK;	
+	x->color = XL_BLACK;	
 }
 
 //delete rb tree node, data will be free
@@ -288,7 +284,9 @@ int xl_rbt_delete(xl_rbt_t *tree, const void *data){
 		x->l = NULL;
 		x->r = NULL;
 		x->p = y;
-		x->color = BLACK;
+		if(y->l == NULL) y->r = x;
+		else y->l = x;
+		x->color = XL_BLACK;
 	} 
 	x->p = y->p;
 	if(x->p == NULL) tree->root = x;
@@ -296,29 +294,33 @@ int xl_rbt_delete(xl_rbt_t *tree, const void *data){
 		if(y == y->p->l) y->p->l = x;
 		else y->p->r = x;
 	}
+	/* !!! free data */
+	free(ret_node->data);
 	if(ret_node != y){
 		//copy y data to ret_node
 		ret_node->data = y->data;
 		ret_node->cnt = y->cnt;		
 	}
 	
-	if(y->color == BLACK){
+	if(y->color == XL_BLACK){
 		_xl_rbt_delete_fix(tree, x);	
 	}
 	if(sub_tag == 1){
-		if(x->p->l == x) x->p->l = NULL;
-		else x->p->r = NULL;
+		if(x->p != NULL){
+			if(x->p->l == x) x->p->l = NULL;
+			else x->p->r = NULL;
+		}else {
+			tree->root = NULL;
+		}
 		free(x);
 	}
 	//free y
-	/* !!!! free y's data */
-	free(y->data);
 	free(y);	
 	return 0;
 }
 
 
-void xl_rbt_inorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
+void xl_rbt_inorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit, void *data){
 	if(tree->root == NULL) return;
 	xl_stack_t * st = xl_stack_init(10, sizeof(char*));
 	xl_rbt_node_t *node = tree->root;
@@ -332,7 +334,7 @@ void xl_rbt_inorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
 			xl_stack_pop(st, (void **)&tmp);
 			node = (xl_rbt_node_t *) (*tmp);
 //			printf("poped node:0x%016lx\n", (int64_t)node);
-			visit(node);
+			visit(node, data);
 			node = node->r;
 		}
 ///		xl_stack_status(st);
@@ -340,7 +342,7 @@ void xl_rbt_inorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
 	xl_stack_free(st);
 }
 
-void xl_rbt_preorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
+void xl_rbt_preorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit, void *data){
 	if(tree->root == NULL) return;
 	xl_stack_t *st = xl_stack_init(10, sizeof(char*));
 	xl_stack_push(st, &(tree->root));
@@ -349,14 +351,14 @@ void xl_rbt_preorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
 	while(xl_stack_count(st) != 0){
 		xl_stack_pop(st, (void **)&tmp);
 		node = (xl_rbt_node_t *) (*tmp);
-		visit(node);
+		visit(node, data);
 		if(node->r != NULL) xl_stack_push(st, &(node->r));
 		if(node->l != NULL) xl_stack_push(st, &(node->l));
 	}
 	xl_stack_free(st);
 }
 
-void xl_rbt_postorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
+void xl_rbt_postorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit, void *data){
 	if(tree->root == NULL) return;
 	xl_stack_t *st1 = xl_stack_init(10, sizeof(char*));
 	xl_stack_t *st2 = xl_stack_init(10, sizeof(char*));
@@ -373,7 +375,7 @@ void xl_rbt_postorder_traverse(xl_rbt_t *tree, xl_rbt_visit_fun_t *visit){
 	while(xl_stack_count(st2) != 0){
 		xl_stack_pop(st2, (void **)(&tmp));
 		node = (xl_rbt_node_t*) (*tmp);
-		visit(node);
+		visit(node, data);
 	}
 	xl_stack_free(st1);
 	xl_stack_free(st2);
